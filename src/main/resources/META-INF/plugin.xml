@@ -1,0 +1,26 @@
+<idea-plugin>
+    <id>io.github.alexander.solovyov.extractmethodrefactoring</id>
+    <name>Extract method from selected</name>
+    <vendor email="solovyov.alexander.s@gmail.com">Contacts</vendor>
+
+    <description>Sample Text</description>
+
+    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
+    <!-- uncomment to enable plugin in all products
+    <depends>com.intellij.modules.lang</depends>
+    -->
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+        <group id="MethodExtraction.ExtractMethod" text="Try to Extract Method" description="Show possible method extractions">
+            <add-to-group group-id="MainToolBar" anchor="last"/>
+            <action id="MethodExtraction.ExtractMethodButton" class="ui.PartialExtractMethodAction" text="Extract Method"
+                    description="Partial method extraction"/>
+        </group>
+    </actions>
+</idea-plugin>
