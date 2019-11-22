@@ -153,7 +153,9 @@ public class PartialExtractMethodProcessor extends ExtractMethodProcessor {
         }
 
         for (PsiElement element : myElements) {
-            if (mySlice.getDuplicatedStatements().contains(element))
+            if (mySlice.getDuplicatedStatements().contains(element) ||
+                    element instanceof PsiCodeBlock ||
+                    element instanceof PsiBlockStatement)
                 removeExtractedStatements(element);
             else if (mySlice.getRemovableStatements().contains(element))
                 element.delete();
@@ -162,9 +164,11 @@ public class PartialExtractMethodProcessor extends ExtractMethodProcessor {
 
     private void removeExtractedStatements(PsiElement element) {
         for (PsiElement child : element.getChildren()) {
-            if (mySlice.getDuplicatedStatements().contains(child))
+            if (mySlice.getDuplicatedStatements().contains(child) ||
+                    child instanceof PsiCodeBlock ||
+                    child instanceof PsiBlockStatement) {
                 removeExtractedStatements(child);
-            if (mySlice.getRemovableStatements().contains(child))
+            } else if (mySlice.getRemovableStatements().contains(child))
                 child.delete();
         }
     }
@@ -240,7 +244,8 @@ public class PartialExtractMethodProcessor extends ExtractMethodProcessor {
                 continue;
             if (originalChild instanceof PsiStatement) {
                 PsiStatement statement = (PsiStatement) originalChild;
-                if (mySlice.getDuplicatedStatements().contains(statement))
+                if (mySlice.getDuplicatedStatements().contains(statement) ||
+                    statement instanceof PsiBlockStatement)
                     clearRemovableStatements(copiedChild,originalChild);
                 else if (!mySlice.getRemovableStatements().contains(statement))
                     copiedChild.delete();
