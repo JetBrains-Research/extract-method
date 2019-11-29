@@ -20,7 +20,7 @@ dependencies {
 
 intellij {
     version '2019.1'
-    pluginName 'IntelliJDeodorant'
+    pluginName 'ExtractMethodRefactoring'
     downloadSources true
     intellij.updateSinceUntilBuild false
 }

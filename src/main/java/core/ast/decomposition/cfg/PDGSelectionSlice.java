@@ -230,4 +230,18 @@ public class PDGSelectionSlice {
         }
         return false;
     }
+
+    boolean isNotTrivial() {
+        if (sliceNodes.size() <= 1)
+            return false;
+        if (sliceNodes.size() == 2) {
+            return !sliceNodes.stream().map(n -> n.declaresLocalVariable(baseVariable)).reduce((a, b) -> a || b).get();
+        }
+        return true;
+    }
+
+    // Checks whether current slice is valid, useful and "optimal"
+    public boolean isValid() {
+        return isNotTrivial();
+    }
 }

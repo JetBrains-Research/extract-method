@@ -22,8 +22,10 @@ public class PartialMethodExtractor {
             PlainVariable variable = new PlainVariable(variableDeclaration);
             if (selection.isAssigned(variable)) {
                 PDGSelectionSlice union = new PDGSelectionSlice(selection, variable);
-                ASTSlice slice = new ASTSlice(union);
-                slices.add(slice);
+                if (union.isValid()){
+                    ASTSlice slice = new ASTSlice(union);
+                    slices.add(slice);
+                }
             }
         }
         return slices;
