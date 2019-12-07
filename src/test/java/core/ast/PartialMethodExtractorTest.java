@@ -5,6 +5,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase;
 import core.ast.decomposition.cfg.ASTSlice;
+import core.ast.decomposition.cfg.PDGVariableBasedSlices;
 
 import java.util.*;
 import java.util.function.Function;
@@ -17,60 +18,55 @@ public class PartialMethodExtractorTest extends LightPlatformCodeInsightFixtureT
     PsiElement lastStatement;
 
     public void testSimple() {
-        List<ASTSlice> opportunities = getRefactoringOpportunities("src/testData/SimpleTest.java");
-        assertEquals(opportunities.size(), 3);
+        List<PDGVariableBasedSlices> opportunities = getRefactoringOpportunities("src/testData/SimpleTest.java");
+        assertEquals(opportunities.size(), 2);
 
-        Map<String, ASTSlice> sliceByVariable = opportunities.stream().collect(
+        Map<String, PDGVariableBasedSlices> slicesByVariable = opportunities.stream().collect(
                 Collectors.toMap(
-                slice -> slice.getLocalVariableCriterion().getName(), Function.identity()));
+                slices -> slices.getBaseVariable().getName(), Function.identity()));
 
         elementFactory = JavaPsiFacade.getElementFactory(myFixture.getProject());
 
         // Is assigned but not used, thus the only possible extraction is trivial
-        assertNull(sliceByVariable.get("xx"));
+        assertNull(slicesByVariable.get("xx"));
+        assertNull(slicesByVariable.get("yy"));
 
-        ASTSlice yyBasedSlice = sliceByVariable.get("yy");
-        assertNotNull(yyBasedSlice);
-        checkStatements(yyBasedSlice,
-                prepareStatements("int xx = pp;", "int yy = 0;", "yy = xx + tt;"),
-                prepareStatements("int xx = pp;"),
-                prepareStatements("int yy = 0;", "yy = xx + tt;"));
-
-        ASTSlice zzBasedSlice = sliceByVariable.get("zz");
-        assertNotNull(zzBasedSlice);
-        checkStatements(zzBasedSlice,
-                prepareStatements("int xx = pp;", "int yy = 0;", "yy = xx + tt;",
-                        "int zz = pp;", "zz = 14;", "zz *= 24;", "zz += yy - xx;"),
-                prepareStatements("int xx = pp;", "int yy = 0;", "yy = xx + tt;"),
+        PDGVariableBasedSlices zzBasedSlices = slicesByVariable.get("zz");
+        assertNotNull(zzBasedSlices);
+        checkStatements(zzBasedSlices.getSlices().get(0),
+                prepareStatements("int zz = pp;", "zz = 14;", "zz *= 24;", "zz += yy - xx;"),
+                prepareStatements(),
                 prepareStatements("int zz = pp;", "zz = 14;", "zz *= 24;", "zz += yy - xx;"));
 
-        ASTSlice ddBasedSlice = sliceByVariable.get("dd");
-        assertNotNull(ddBasedSlice);
-        checkStatements(ddBasedSlice,
+        PDGVariableBasedSlices ddBasedSlices = slicesByVariable.get("dd");
+        assertNotNull(ddBasedSlices);
+        checkStatements(ddBasedSlices.getSlices().get(0),
                 prepareStatements("int dd = 0;", "dd += 35;", "dd *= 3;"),
                 prepareStatements(),
                 prepareStatements("int dd = 0;", "dd += 35;", "dd *= 3;"));
     }
 
     public void testNested() {
-        List<ASTSlice> opportunities = getRefactoringOpportunities("src/testData/NestedTest.java");
-        assertEquals(opportunities.size(), 2);
+        List<PDGVariableBasedSlices> opportunities = getRefactoringOpportunities("src/testData/NestedTest.java");
+        assertEquals(2, opportunities.size());
 
-        Map<String, ASTSlice> sliceByVariable = opportunities.stream().collect(
+        Map<String, PDGVariableBasedSlices> slicesByVariable = opportunities.stream().collect(
                 Collectors.toMap(
-                        slice -> slice.getLocalVariableCriterion().getName(), Function.identity()));
+                        slice -> slice.getBaseVariable().getName(), Function.identity()));
 
-        ASTSlice xxBasedSlice = sliceByVariable.get("xx");
-        assertNotNull(xxBasedSlice);
-        assertEquals(xxBasedSlice.getSliceStatements().size(),9);
-        assertEquals(xxBasedSlice.getDuplicatedStatements().size(),3);
-        assertEquals(xxBasedSlice.getRemovableStatements().size(),6);
+        PDGVariableBasedSlices xxBasedSlices = slicesByVariable.get("xx");
+        assertNotNull(xxBasedSlices);
+        assertEquals(xxBasedSlices.getSlices().size(), 1);
+        assertEquals(xxBasedSlices.getSlices().get(0).getSliceStatements().size(),9);
+        assertEquals(xxBasedSlices.getSlices().get(0).getDuplicatedStatements().size(),3);
+        assertEquals(xxBasedSlices.getSlices().get(0).getRemovableStatements().size(),6);
 
-        ASTSlice yyBasedSlice = sliceByVariable.get("yy");
-        assertNotNull(yyBasedSlice);
-        assertEquals(yyBasedSlice.getSliceStatements().size(),9);
-        assertEquals(yyBasedSlice.getDuplicatedStatements().size(),3);
-        assertEquals(yyBasedSlice.getRemovableStatements().size(),6);
+        PDGVariableBasedSlices yyBasedSlices = slicesByVariable.get("yy");
+        assertNotNull(yyBasedSlices);
+        assertEquals(yyBasedSlices.getSlices().size(), 1);
+        assertEquals(yyBasedSlices.getSlices().get(0).getSliceStatements().size(),9);
+        assertEquals(yyBasedSlices.getSlices().get(0).getDuplicatedStatements().size(),3);
+        assertEquals(yyBasedSlices.getSlices().get(0).getRemovableStatements().size(),6);
     }
 
     private Set<String> prepareStatements(String... statements) {
@@ -87,12 +83,16 @@ public class PartialMethodExtractorTest extends LightPlatformCodeInsightFixtureT
                 collect(Collectors.toSet()), removableStatements);
     }
 
-    private void printSlicesInfo(List<ASTSlice> opportunities) {
-        for (ASTSlice slice : opportunities) {
-            System.out.println(slice.getLocalVariableCriterion().getName());
-            outputStatements(slice.getSliceStatements(), "Slice");
-            outputStatements(slice.getDuplicatedStatements(), "Duplicated");
-            outputStatements(slice.getRemovableStatements(), "Removable");
+    private void printSlicesInfo(List<PDGVariableBasedSlices> opportunities) {
+        for (PDGVariableBasedSlices slices : opportunities) {
+            System.out.println(slices.getBaseVariable().getName());
+            for (ASTSlice slice : slices.getSlices()) {
+                outputStatements(slice.getSliceStatements(), "Slice");
+                outputStatements(slice.getDuplicatedStatements(), "Duplicated");
+                outputStatements(slice.getRemovableStatements(), "Removable");
+                System.out.println();
+            }
+            System.out.println();
         }
     }
 
@@ -106,7 +106,7 @@ public class PartialMethodExtractorTest extends LightPlatformCodeInsightFixtureT
         System.out.println(str.toString());
     }
 
-    private List<ASTSlice> getRefactoringOpportunities(final String fileName) {
+    private List<PDGVariableBasedSlices> getRefactoringOpportunities(final String fileName) {
         file = myFixture.configureByFile(fileName);
         SelectionModel selectionModel = myFixture.getEditor().getSelectionModel();
         firstStatement = file.findElementAt(selectionModel.getSelectionStart());
@@ -125,7 +125,7 @@ public class PartialMethodExtractorTest extends LightPlatformCodeInsightFixtureT
         firstStatement = PsiTreeUtil.findFirstParent(firstStatement, p -> p.getParent() == codeBlock);
         lastStatement  = PsiTreeUtil.findFirstParent(lastStatement, p -> p.getParent() == codeBlock);
 
-        List<ASTSlice> opportunities = PartialMethodExtractor.getOpportunities(
+        List<PDGVariableBasedSlices> opportunities = PartialMethodExtractor.getOpportunities(
                 (PsiMethod) method,firstStatement, lastStatement);
         assertNotNull(opportunities);
         return opportunities;
