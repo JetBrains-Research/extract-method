@@ -9,23 +9,20 @@ import java.util.*;
 
 public class PartialMethodExtractor {
 
-    public static List<ASTSlice> getOpportunities(PsiMethod method, PsiElement firstElement, PsiElement lastElement) {
+    public static List<PDGVariableBasedSlices> getOpportunities(PsiMethod method, PsiElement firstElement, PsiElement lastElement) {
         AbstractMethodDeclaration declaration = processMethodDeclaration(method);
         CFG cfg = new CFG(declaration);
         // Under what circumstances can this situation occur?
         if (method.getContainingClass() == null)
             return null;
         PDG pdg = new PDG(cfg, method.getContainingFile(), getFieldObjects(method.getContainingClass()));
-        PDGSelection selection = new PDGSelection(pdg, firstElement, lastElement);
-        List<ASTSlice> slices = new ArrayList<>();
+        List<PDGVariableBasedSlices> slices = new ArrayList<>();
         for (PsiVariable variableDeclaration : pdg.getVariableDeclarationsInMethod()) {
             PlainVariable variable = new PlainVariable(variableDeclaration);
-            if (selection.isAssigned(variable)) {
-                PDGSelectionSlice union = new PDGSelectionSlice(selection, variable);
-                if (union.isValid()){
-                    ASTSlice slice = new ASTSlice(union);
-                    slices.add(slice);
-                }
+            PDGVariableBasedSlices variableBasedSlices =
+                    new PDGVariableBasedSlices(pdg, variable, firstElement, lastElement);
+            if (!variableBasedSlices.getSlices().isEmpty()) {
+                slices.add(variableBasedSlices);
             }
         }
         return slices;

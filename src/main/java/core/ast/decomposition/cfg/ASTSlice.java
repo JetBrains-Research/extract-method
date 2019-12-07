@@ -170,12 +170,6 @@ public class ASTSlice {
         return sb.toString();
     }
 
-    public String toString() {
-        return //getSourceTypeDeclaration().getQualifiedName() + "::" +
-                getSourceMethodDeclaration().getName() + "." +
-                getLocalVariableCriterion().getName();
-    }
-
     public int getNumberOfSliceStatements() {
         return getSliceStatements().size();
     }

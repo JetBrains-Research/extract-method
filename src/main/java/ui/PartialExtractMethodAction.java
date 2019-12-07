@@ -13,6 +13,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import core.ast.PartialMethodExtractor;
 import core.ast.decomposition.cfg.ASTSlice;
+import core.ast.decomposition.cfg.PDGVariableBasedSlices;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -55,11 +56,12 @@ public class PartialExtractMethodAction extends AnAction {
         firstStatement = PsiTreeUtil.findFirstParent(firstStatement, p -> { return p.getParent() == codeBlock; });
         lastStatement = PsiTreeUtil.findFirstParent(lastStatement, p -> { return p.getParent() == codeBlock; });
 
-        List<ASTSlice> opportunities = PartialMethodExtractor.getOpportunities((PsiMethod) method, firstStatement, lastStatement);
+        List<PDGVariableBasedSlices> opportunities = PartialMethodExtractor.getOpportunities((PsiMethod) method, firstStatement, lastStatement);
         ShowPreview(project, editor, opportunities);
     }
 
-    private void ShowPreview(@NotNull Project project, @NotNull Editor editor, List<ASTSlice> opportunities) {
+    private void ShowPreview(@NotNull Project project, @NotNull Editor editor,
+                             List<PDGVariableBasedSlices> opportunities) {
         if (opportunities == null) {
             Messages.showErrorDialog("Couldn't resolve methods owner",
                     "Error While Getting Refactoring Opportunities");

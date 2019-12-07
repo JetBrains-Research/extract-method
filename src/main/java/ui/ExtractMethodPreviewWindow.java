@@ -11,6 +11,7 @@ import com.intellij.refactoring.extractMethod.PrepareFailedException;
 import com.intellij.ui.treeStructure.Tree;
 import core.ast.decomposition.cfg.ASTSlice;
 import core.ast.decomposition.cfg.PDGNode;
+import core.ast.decomposition.cfg.PDGVariableBasedSlices;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -28,7 +29,8 @@ final class ExtractMethodPreviewWindow extends JPanel {
     private final Editor editor;
     private Tree tree;
 
-    ExtractMethodPreviewWindow(@NotNull Project project, @NotNull Editor editor, @NotNull List<ASTSlice> slices) {
+    ExtractMethodPreviewWindow(@NotNull Project project, @NotNull Editor editor,
+                               @NotNull List<PDGVariableBasedSlices> slices) {
         this.project = project;
         this.editor = editor;
         setLayout(new BorderLayout());
@@ -36,7 +38,7 @@ final class ExtractMethodPreviewWindow extends JPanel {
         // add(buildPreviewPanel(slices.get(0)), BorderLayout.CENTER);
     }
 
-    private JPanel buildOpportunitiesPanel(@NotNull List<ASTSlice> slices) {
+    private JPanel buildOpportunitiesPanel(@NotNull List<PDGVariableBasedSlices> slices) {
         JPanel panel = new JPanel();
         panel.setLayout(new BorderLayout());
 
@@ -50,8 +52,8 @@ final class ExtractMethodPreviewWindow extends JPanel {
     }
 
     private void optionSelected() {
-        if (tree.getSelectionPath().getPath().length == 2) {
-            Object choice = tree.getSelectionPath().getPathComponent(1);
+        if (tree.getSelectionPath().getPath().length == 3) {
+            Object choice = tree.getSelectionPath().getPathComponent(2);
             if (choice instanceof ASTSlice) {
                 extract((ASTSlice) choice);
             }
@@ -68,9 +70,9 @@ final class ExtractMethodPreviewWindow extends JPanel {
     }
 
     private void extract(ASTSlice slice) {
-//        OutputStatements(slice.getSliceStatements(),"Slice");
-//        OutputStatements(slice.getDuplicatedStatements(), "Duplicated");
-//        OutputStatements(slice.getRemovableStatements(), "Removable");
+        OutputStatements(slice.getSliceStatements(),"Slice");
+        OutputStatements(slice.getDuplicatedStatements(), "Duplicated");
+        OutputStatements(slice.getRemovableStatements(), "Removable");
         PartialExtractMethodProcessor processor = new PartialExtractMethodProcessor(project, editor, slice);
 
         try {
