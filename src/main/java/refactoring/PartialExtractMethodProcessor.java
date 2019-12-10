@@ -135,7 +135,7 @@ public class PartialExtractMethodProcessor extends ExtractMethodProcessor {
         PsiMethod newMethod = generateEmptyMethod(myMethodName, null);
         prepareMethodBody(newMethod);
         myExtractedMethod = addExtractedMethod(newMethod);
-        setMethodCall(generateMethodCall(null, true));
+        setMethodCall(generateMethodCall(null, true, null));
 
         final String outputVariableName = myCriterion.getName();
         if (isDeclaredInside(myCriterion) && outputVariableName != null) {
@@ -186,7 +186,7 @@ public class PartialExtractMethodProcessor extends ExtractMethodProcessor {
                 inputVariables.add(data.variable);
             }
         }
-        myInputVariables = new InputVariables(inputVariables, myProject, new LocalSearchScope(myElements), true);
+        myInputVariables = new InputVariables(inputVariables, myProject, new LocalSearchScope(myElements), true, new HashSet<>());
         myVariableDatum = myInputVariables.getInputVariables().toArray(new VariableData[0]);
     }
 
