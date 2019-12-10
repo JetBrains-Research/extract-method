@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.4.10'
+    id 'org.jetbrains.intellij' version '0.4.15'
 }
 
 group 'io.github.alexander.solovyov'
@@ -19,8 +19,9 @@ dependencies {
 }
 
 intellij {
-    version '2019.1'
+    version '2019.3'
     pluginName 'ExtractMethodRefactoring'
+    plugins 'java'
     downloadSources true
     intellij.updateSinceUntilBuild false
 }
