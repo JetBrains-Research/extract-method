@@ -3,7 +3,8 @@ package core.ast;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase;
+import com.intellij.testFramework.TestDataPath;
+import com.intellij.testFramework.fixtures.BasePlatformTestCase;
 import core.ast.decomposition.cfg.ASTSlice;
 import core.ast.decomposition.cfg.PDGVariableBasedSlices;
 
@@ -11,14 +12,20 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class PartialMethodExtractorTest extends LightPlatformCodeInsightFixtureTestCase {
+@TestDataPath("$PROJECT_ROOT/testData/")
+public class PartialMethodExtractorTest extends BasePlatformTestCase {
     PsiElementFactory elementFactory;
     PsiFile file;
     PsiElement firstStatement;
     PsiElement lastStatement;
 
+    @Override
+    protected String getTestDataPath() {
+        return "testData/";
+    }
+
     public void testSimple() {
-        List<PDGVariableBasedSlices> opportunities = getRefactoringOpportunities("src/testData/SimpleTest.java");
+        List<PDGVariableBasedSlices> opportunities = getRefactoringOpportunities("SimpleTest.java");
         assertEquals(opportunities.size(), 2);
 
         Map<String, PDGVariableBasedSlices> slicesByVariable = opportunities.stream().collect(
@@ -47,7 +54,7 @@ public class PartialMethodExtractorTest extends LightPlatformCodeInsightFixtureT
     }
 
     public void testNested() {
-        List<PDGVariableBasedSlices> opportunities = getRefactoringOpportunities("src/testData/NestedTest.java");
+        List<PDGVariableBasedSlices> opportunities = getRefactoringOpportunities("NestedTest.java");
         assertEquals(2, opportunities.size());
 
         Map<String, PDGVariableBasedSlices> slicesByVariable = opportunities.stream().collect(

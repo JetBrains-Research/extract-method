@@ -1,6 +1,8 @@
 package core.ast.decomposition.cfg;
 
+import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiElement;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -29,7 +31,7 @@ public class PDGVariableBasedSlices {
 
         slices = new ArrayList<>();
         for (PDGNode node : topNodes) {
-            if (node.definesLocalVariable(variable)) {
+            if (isLocalVariableDefined(node, variable)) {
                 PDGSelection selection = new PDGSelection(pdg, node.getStatement().getStatement(), last);
                 PDGSelectionSlice union = new PDGSelectionSlice(selection, variable);
                 if (union.isValid()){
@@ -38,6 +40,18 @@ public class PDGVariableBasedSlices {
                 }
             }
         }
+    }
+
+    private boolean isLocalVariableDefined(@NotNull PDGNode node, @NotNull AbstractVariable variable) {
+        if (node.definesLocalVariable(variable)) {
+            return true;
+        }
+        for (PDGNode pdgNode : node.getControlDependentNodes()) {
+            if (isLocalVariableDefined(pdgNode, variable)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public AbstractVariable getBaseVariable() {
