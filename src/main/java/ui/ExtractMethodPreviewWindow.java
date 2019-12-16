@@ -70,9 +70,9 @@ final class ExtractMethodPreviewWindow extends JPanel {
     }
 
     private void extract(ASTSlice slice) {
-        OutputStatements(slice.getSliceStatements(),"Slice");
-        OutputStatements(slice.getDuplicatedStatements(), "Duplicated");
-        OutputStatements(slice.getRemovableStatements(), "Removable");
+//        OutputStatements(slice.getSliceStatements(),"Slice");
+//        OutputStatements(slice.getDuplicatedStatements(), "Duplicated");
+//        OutputStatements(slice.getRemovableStatements(), "Removable");
         PartialExtractMethodProcessor processor = new PartialExtractMethodProcessor(project, editor, slice);
 
         try {
